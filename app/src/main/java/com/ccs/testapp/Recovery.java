@@ -17,6 +17,7 @@ public class Recovery extends AppCompatActivity {
         setContentView(R.layout.activity_recovery);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getSupportActionBar().hide();
+        send_pass = findViewById(R.id.send_pass_btn);
 
         send_pass.setOnClickListener(new View.OnClickListener() {
             @Override

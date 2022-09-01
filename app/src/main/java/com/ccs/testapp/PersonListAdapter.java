@@ -1,18 +1,27 @@
 package com.ccs.testapp;
 
-import android.app.Person;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class DataList extends ArrayAdapter<Data> {
+/**
+ * Created by User on 3/14/2017.
+ */
+
+public class PersonListAdapter extends ArrayAdapter<Person> {
+
+    private static final String TAG = "PersonListAdapter";
+
     private Context mContext;
     private int mResource;
     private int lastPosition = -1;
@@ -21,9 +30,9 @@ public class DataList extends ArrayAdapter<Data> {
      * Holds variables in a View
      */
     private static class ViewHolder {
-        TextView number;
-        TextView amount;
-        TextView price;
+        TextView name;
+        TextView birthday;
+        TextView sex;
     }
 
     /**
@@ -32,7 +41,7 @@ public class DataList extends ArrayAdapter<Data> {
      * @param resource
      * @param objects
      */
-    public DataList(Context context, int resource, ArrayList<Data> objects) {
+    public PersonListAdapter(Context context, int resource, ArrayList<Person> objects) {
         super(context, resource, objects);
         mContext = context;
         mResource = resource;
@@ -42,12 +51,12 @@ public class DataList extends ArrayAdapter<Data> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         //get the persons information
-        String number = getItem(position).getNumber();
-        String amount = getItem(position).getAmount();
-        String price = getItem(position).getPrice();
+        String name = getItem(position).getName();
+        String birthday = getItem(position).getBirthday();
+        String sex = getItem(position).getSex();
 
         //Create the person object with the information
-        Data data = new Data(number,amount,price);
+        Person person = new Person(name,birthday,sex);
 
         //create the view result for showing the animation
         final View result;
@@ -60,9 +69,9 @@ public class DataList extends ArrayAdapter<Data> {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             convertView = inflater.inflate(mResource, parent, false);
             holder= new ViewHolder();
-            holder.number = (TextView) convertView.findViewById(R.id.textView1);
-            holder.amount = (TextView) convertView.findViewById(R.id.textView2);
-            holder.price = (TextView) convertView.findViewById(R.id.textView3);
+            holder.name = (TextView) convertView.findViewById(R.id.textView1);
+            holder.birthday = (TextView) convertView.findViewById(R.id.textView2);
+            holder.sex = (TextView) convertView.findViewById(R.id.textView3);
 
             result = convertView;
 
@@ -76,12 +85,11 @@ public class DataList extends ArrayAdapter<Data> {
 
 
 
-        holder.number.setText(data.getNumber());
-        holder.amount.setText(data.getAmount());
-        holder.price.setText(data.getPrice());
+        holder.name.setText(person.getName());
+        holder.birthday.setText(person.getBirthday());
+        holder.sex.setText(person.getSex());
 
 
         return convertView;
     }
-
 }
