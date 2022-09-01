@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Recovery">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/edit_em_rec"
+        android:layout_centerInParent="true"
+        android:fontFamily="sans-serif-smallcaps"
+        android:text="Восстановление пароля"
+        android:textColor="@color/yellow"
+        android:textSize="25sp" />
+
+    <Button
+        android:id="@+id/send_pass_btn"
+        android:layout_width="350dp"
+        android:layout_height="45dp"
+        android:backgroundTint="@color/yellow"
+        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="10dp"
+        android:text="Отправить"
+        android:textColor="@color/black" />
+
+    <EditText
+        android:layout_width="350dp"
+        android:layout_height="25dp"
+        android:hint="Email"
+        android:layout_centerVertical="true"
+        android:background="@drawable/edittext"
+        android:inputType="textEmailAddress"
+        android:id="@+id/edit_em_rec"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:layout_above="@+id/send_pass_btn"
+        android:textColorHint="@color/black"
+        android:layout_marginTop="250dp"/>
+
+
+</RelativeLayout>
