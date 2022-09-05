@@ -3,22 +3,30 @@ package com.ccs.testapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
 import java.util.ArrayList;
 
-public class Products extends AppCompatActivity {
+public class Products extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private int choosed_block;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_products);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         ListView mListView = (ListView) findViewById(R.id.listView);
+        choosed_block = PreferencesConfig.loadTotalFromPref(this);
         Person john = new Person("John", "12-20-1998", "Male");
         Person steve = new Person("Steve", "08-03-1987", "Male");
         Person stacy = new Person("Stacy", "11-15-2000", "Female");
@@ -52,8 +60,30 @@ public class Products extends AppCompatActivity {
         peopleList.add(matt9);
         peopleList.add(matt10);
         peopleList.add(matt11);*/
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                             @Override
+                                             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                                                 switch (position) {
+                                                     case 0:
+                                                         choosed_block = 0;
+                                                         PreferencesConfig.saveTotalInPref(getApplicationContext(), choosed_block);
+                                                         Products.this.startActivity(new Intent(Products.this, ProductInfo.class));
+                                                         overridePendingTransition(0, 0);
+                                                         break;
+                                                     default:
+                                                         Toast.makeText(Products.this, "Ошибка", Toast.LENGTH_LONG).show();
+                                                         break;
 
+
+                                                 }
+
+                                             }
+                                         });
         PersonListAdapter adapter = new PersonListAdapter(this, R.layout.datalist_activity, peopleList);
         mListView.setAdapter(adapter);
+    }
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        choosed_block = PreferencesConfig.loadTotalFromPref(this);
     }
 }

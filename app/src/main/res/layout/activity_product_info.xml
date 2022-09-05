@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ProductInfo">
+
+    <ImageButton
+        android:id="@+id/im_btn_prod_inf"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_centerHorizontal="true" />
+    <ImageView
+        android:id="@+id/im_view_prod_inf"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
+        android:layout_centerHorizontal="true" />
+    <Button
+        android:id="@+id/change_inf_prod_inf"
+        android:layout_width="350dp"
+        android:layout_height="45dp"
+        android:backgroundTint="@color/yellow"
+        android:layout_centerHorizontal="true"
+        android:text="Изменить"
+        android:layout_alignParentBottom="true"
+        android:textColor="@color/black" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/im_view_prod_inf"
+        android:id="@+id/text_prod_inf"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Название"
+        android:layout_below="@+id/im_btn_prod_inf"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/edittext_inv"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:inputType="text"
+        android:id="@+id/edit_name_prod_inf"
+        android:layout_centerHorizontal="true"
+        android:textColorHint="@color/gray" />
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Цена"
+        android:layout_below="@+id/edit_name_prod_inf"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/edittext_inv"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:inputType="text"
+        android:id="@+id/edit_price_prod_inf"
+        android:layout_centerHorizontal="true"
+        android:textColorHint="@color/gray" />
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Количество"
+        android:layout_below="@+id/edit_price_prod_inf"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/edittext_inv"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:inputType="text"
+        android:id="@+id/edit_amount_prod_inf"
+        android:layout_centerHorizontal="true"
+        android:textColorHint="@color/gray" />
+    <Button
+        android:id="@+id/save_inf_prod_inf"
+        android:layout_width="350dp"
+        android:layout_height="45dp"
+        android:backgroundTint="@color/yellow"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:text="Сохранить"
+        android:textColor="@color/black" />
+</RelativeLayout>
