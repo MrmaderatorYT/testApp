@@ -1,5 +1,6 @@
 package com.ccs.testapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -12,16 +13,27 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import org.jetbrains.annotations.NotNull;
+
 
 public class MainActivity extends AppCompatActivity{
 private Button login, recovery, register;
 private EditText email, password;
+private FirebaseAuth auth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getSupportActionBar().hide();
+        auth =FirebaseAuth.getInstance();
         recovery = findViewById(R.id.recovery_btn);
         register = findViewById(R.id.register_btn);
         login = findViewById(R.id.login_btn);
@@ -45,8 +57,29 @@ private EditText email, password;
                     Toast.makeText(MainActivity.this, "Введите данные", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    MainActivity.this.startActivity(new Intent(MainActivity.this, Products.class));
-                    overridePendingTransition(0, 0);
+                    auth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString()).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull @NotNull Task<AuthResult> task) {
+
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = auth.getCurrentUser();
+                            assert user != null;
+                            if (user.isEmailVerified()) {
+                                MainActivity.this.startActivity(new Intent(MainActivity.this, Products.class));
+                                overridePendingTransition(0, 0);
+                            }
+                            else{
+                                Toast.makeText(MainActivity.this, "Проверьте вашу почту для подтверждения вашего адреса", Toast.LENGTH_SHORT).show();
+
+                            }
+                        }
+                        else {
+                            Toast.makeText(MainActivity.this, "Что-то пошло не так.", Toast.LENGTH_SHORT).show();
+
+                        }
+                        }
+                    });
+
                 }
 
             }
@@ -70,6 +103,7 @@ private EditText email, password;
         });
 
     }
+
 
 
 }
