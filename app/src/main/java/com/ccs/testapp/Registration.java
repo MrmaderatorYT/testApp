@@ -27,7 +27,7 @@ public class Registration extends AppCompatActivity {
 private Button reg;
 private EditText email, pass1, pass2;
 private DatabaseReference database;
-private String USER_KEY="User";
+public String USER_KEY="User";
 private FirebaseAuth auth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,30 +45,31 @@ private FirebaseAuth auth;
             @Override
             public void onClick(View view) {
             String id = database.getKey();
-            String em = email.getText().toString();
-            String pass = pass1.getText().toString();
-            String pass_1 = pass2.getText().toString();
+            String em = email.getText().toString().trim();
+            String pass = pass1.getText().toString().trim();
+            String pass_1 = pass2.getText().toString().trim();
             if(TextUtils.isEmpty(em) || TextUtils.isEmpty(pass) || TextUtils.isEmpty(pass_1)){
 
                 Toast.makeText(Registration.this, "Введите все данные.", Toast.LENGTH_SHORT).show();
             }
             else{
                 //if err{rem pass1.eq(pass)
-                if(pass.equals(pass_1)||pass_1.equals(pass)){
+                if(pass.equals(pass_1)&&pass.length()>=6){
 
-                    auth.createUserWithEmailAndPassword(email.getText().toString(), pass1.getText().toString()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    auth.createUserWithEmailAndPassword(email.getText().toString().trim(), pass1.getText().toString().trim()).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull @NotNull Task<AuthResult> task) {
                             if (task.isSuccessful()){
                                 sendEmailVerification();
 
-                           //User newUser = new User(id, em, pass);
-                           //database.push().setValue(newUser);
-                           Toast.makeText(Registration.this, "Зарегистрировано!", Toast.LENGTH_SHORT).show();
-                       }
+                                User newUser = new User(id, em, pass);
+                                database.push().setValue(newUser);
+                                Toast.makeText(Registration.this, "Зарегистрировано!", Toast.LENGTH_SHORT).show();
+                            }
                        else{
-                           Toast.makeText(Registration.this, "Что-то пошло не так.", Toast.LENGTH_SHORT).show();
-                       }
+                                Toast.makeText(Registration.this, "Что-то пошло не так.", Toast.LENGTH_SHORT).show();
+                                Log.w("TaskNotSuc", "signUp", task.getException());
+                            }
                         }
                     });
 
@@ -90,10 +91,7 @@ private FirebaseAuth auth;
     protected void onStart(){
         super.onStart();
         FirebaseUser user = auth.getCurrentUser();
-        if(user!=null){
-            Toast.makeText(Registration.this, "Пароли не совпадают.", Toast.LENGTH_SHORT).show();
 
-        }
     }
     public void sendEmailVerification(){
         FirebaseUser user = auth.getCurrentUser();
@@ -103,11 +101,14 @@ private FirebaseAuth auth;
             public void onComplete(@NonNull @NotNull Task<Void> task) {
                 if(task.isSuccessful()){
                     Toast.makeText(Registration.this, "Подтвердите почту", Toast.LENGTH_SHORT).show();
+                    Log.i("Registration", "verify");
+
 
 
                 }
                 else {
                     Toast.makeText(Registration.this, "Неудалось отправить подтверждение", Toast.LENGTH_SHORT).show();
+                    Log.i("Registration", "verify_err");
                 }
             }
         });

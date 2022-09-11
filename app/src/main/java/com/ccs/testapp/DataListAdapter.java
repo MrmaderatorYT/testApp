@@ -18,9 +18,9 @@ import java.util.List;
  * Created by User on 3/14/2017.
  */
 
-public class PersonListAdapter extends ArrayAdapter<Person> {
+public class DataListAdapter extends ArrayAdapter<Data> {
 
-    private static final String TAG = "PersonListAdapter";
+    private static final String TAG = "DataListAdapter";
 
     private Context mContext;
     private int mResource;
@@ -31,8 +31,8 @@ public class PersonListAdapter extends ArrayAdapter<Person> {
      */
     private static class ViewHolder {
         TextView name;
-        TextView birthday;
-        TextView sex;
+        TextView amount;
+        TextView price;
     }
 
     /**
@@ -41,7 +41,7 @@ public class PersonListAdapter extends ArrayAdapter<Person> {
      * @param resource
      * @param objects
      */
-    public PersonListAdapter(Context context, int resource, ArrayList<Person> objects) {
+    public DataListAdapter(Context context, int resource, ArrayList<Data> objects) {
         super(context, resource, objects);
         mContext = context;
         mResource = resource;
@@ -52,11 +52,11 @@ public class PersonListAdapter extends ArrayAdapter<Person> {
     public View getView(int position, View convertView, ViewGroup parent) {
         //get the persons information
         String name = getItem(position).getName();
-        String birthday = getItem(position).getBirthday();
-        String sex = getItem(position).getSex();
+        String amount = getItem(position).getAmount();
+        String price = getItem(position).getPrice();
 
         //Create the person object with the information
-        Person person = new Person(name,birthday,sex);
+        Data data = new Data(name,amount,price);
 
         //create the view result for showing the animation
         final View result;
@@ -70,8 +70,8 @@ public class PersonListAdapter extends ArrayAdapter<Person> {
             convertView = inflater.inflate(mResource, parent, false);
             holder= new ViewHolder();
             holder.name = (TextView) convertView.findViewById(R.id.textView1);
-            holder.birthday = (TextView) convertView.findViewById(R.id.textView2);
-            holder.sex = (TextView) convertView.findViewById(R.id.textView3);
+            holder.amount = (TextView) convertView.findViewById(R.id.textView2);
+            holder.price = (TextView) convertView.findViewById(R.id.textView3);
 
             result = convertView;
 
@@ -85,9 +85,9 @@ public class PersonListAdapter extends ArrayAdapter<Person> {
 
 
 
-        holder.name.setText(person.getName());
-        holder.birthday.setText(person.getBirthday());
-        holder.sex.setText(person.getSex());
+        holder.name.setText(data.getName());
+        holder.amount.setText(data.getAmount());
+        holder.price.setText(data.getPrice());
 
 
         return convertView;

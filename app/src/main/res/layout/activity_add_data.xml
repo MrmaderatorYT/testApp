@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddData">
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Название"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/edittext_inv"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:inputType="text"
+        android:id="@+id/edit_name"
+        android:layout_centerHorizontal="true"
+        android:textColorHint="@color/gray" />
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Цена"
+        android:layout_below="@+id/edit_name"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/edittext_inv"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:inputType="text"
+        android:id="@+id/edit_price"
+        android:layout_centerHorizontal="true"
+        android:textColorHint="@color/gray" />
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Количество"
+        android:layout_below="@+id/edit_price"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/edittext_inv"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="10dp"
+        android:inputType="text"
+        android:id="@+id/edit_amount"
+        android:layout_centerHorizontal="true"
+        android:textColorHint="@color/gray" />
+    <Button
+        android:id="@+id/create_btn"
+        android:layout_width="350dp"
+        android:layout_height="45dp"
+        android:backgroundTint="@color/yellow"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+
+        android:text="Сохранить"
+        android:textColor="@color/black" />
+
+</RelativeLayout>

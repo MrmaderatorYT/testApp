@@ -33,7 +33,7 @@ private FirebaseAuth auth;
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getSupportActionBar().hide();
-        auth =FirebaseAuth.getInstance();
+        auth = FirebaseAuth.getInstance();
         recovery = findViewById(R.id.recovery_btn);
         register = findViewById(R.id.register_btn);
         login = findViewById(R.id.login_btn);
@@ -57,7 +57,7 @@ private FirebaseAuth auth;
                     Toast.makeText(MainActivity.this, "Введите данные", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    auth.signInWithEmailAndPassword(email.getText().toString(), password.getText().toString()).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                    auth.signInWithEmailAndPassword(email.getText().toString().trim(), password.getText().toString().trim()).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull @NotNull Task<AuthResult> task) {
 

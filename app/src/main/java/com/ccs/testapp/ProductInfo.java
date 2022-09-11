@@ -34,6 +34,8 @@ private ImageButton upload_btn;
         amount.setVisibility(View.INVISIBLE);
         save.setVisibility(View.INVISIBLE);
         upload_btn.setVisibility(View.INVISIBLE);
+
+
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
