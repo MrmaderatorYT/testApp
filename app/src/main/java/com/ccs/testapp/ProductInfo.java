@@ -1,7 +1,8 @@
- package com.ccs.testapp;
+package com.ccs.testapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
@@ -12,11 +13,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class ProductInfo extends AppCompatActivity {
-private EditText name, price, amount;
-private TextView textInfo;
-private Button save, edit;
-private ImageView imageView;
-private ImageButton upload_btn;
+    private EditText name, price, amount;
+    private TextView textInfo;
+    private Button save, edit;
+    private ImageView imageView;
+    private ImageButton upload_btn;
+    private int number;
+    private int quantity;
+    private double priceInt;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +40,12 @@ private ImageButton upload_btn;
         save.setVisibility(View.INVISIBLE);
         upload_btn.setVisibility(View.INVISIBLE);
 
+        Intent intent = getIntent();
+        number = intent.getIntExtra("number", 0);
+        quantity = intent.getIntExtra("quantity", 0);
+        priceInt = intent.getDoubleExtra("price", 0.0);
+
+        textInfo.setText("Номер товара: " + number + "\n" + "Количество: " + quantity + "\n" + "Цена: " + priceInt + " грн");
 
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,12 +55,12 @@ private ImageButton upload_btn;
                 amount.setVisibility(View.VISIBLE);
                 save.setVisibility(View.VISIBLE);
                 upload_btn.setVisibility(View.VISIBLE);
-
                 textInfo.setVisibility(View.INVISIBLE);
                 edit.setVisibility(View.INVISIBLE);
                 imageView.setVisibility(View.INVISIBLE);
             }
         });
+
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -58,6 +69,5 @@ private ImageButton upload_btn;
                 overridePendingTransition(0, 0);
             }
         });
-
     }
 }

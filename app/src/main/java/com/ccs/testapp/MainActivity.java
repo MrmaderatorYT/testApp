@@ -3,6 +3,7 @@ package com.ccs.testapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -39,6 +40,10 @@ private FirebaseAuth auth;
         login = findViewById(R.id.login_btn);
         email = findViewById(R.id.edit_em);
         password = findViewById(R.id.edit_pass);
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+
         //подчёркивание текста
         String htmlTaggedString = "<u>Восстановление пароля</u>";
         Spanned textSpan = android.text.Html.fromHtml(htmlTaggedString);
@@ -52,7 +57,7 @@ private FirebaseAuth auth;
             public void onClick(View view) {
                     String result = email.getText().toString();
                     String result1 = password.getText().toString();
-//гуглим,почему нельзя null
+                    //гуглим,почему нельзя null
                 if (result.equals("")||result1.equals("")){
                     Toast.makeText(MainActivity.this, "Введите данные", Toast.LENGTH_SHORT).show();
                 }
@@ -65,6 +70,8 @@ private FirebaseAuth auth;
                             FirebaseUser user = auth.getCurrentUser();
                             assert user != null;
                             if (user.isEmailVerified()) {
+                                editor.putString("my_edit_key", result);
+                                editor.apply();
                                 MainActivity.this.startActivity(new Intent(MainActivity.this, Products.class));
                                 overridePendingTransition(0, 0);
                             }
