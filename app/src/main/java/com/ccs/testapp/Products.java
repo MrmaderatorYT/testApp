@@ -68,7 +68,7 @@ public class Products extends AppCompatActivity {
                                             // Данные успешно отправлены в базу данных
                                             Log.d("Products", "Data sent to Firebase Realtime Database");
                                         } else {
-                                            // Произошла ошибка при отправке данных
+                                            // Произошла ошибка при отправке данных 
                                             Log.e("Products", "Failed to send data to Firebase Realtime Database: " + task.getException());
                                         }
                                     }
@@ -81,11 +81,19 @@ public class Products extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // Вызываем окно для редактирования выбранного товара
+                // Получаем выбранный товар
+                Item selectedItem = items.get(i);
+
+                // Создаем новый Intent
                 Intent intent = new Intent(Products.this, ProductInfo.class);
-                intent.putExtra("position", i);
-                intent.putExtra("item", items.get(i).toJson());
-                startActivityForResult(intent, 2);
+
+                // Передаем информацию о выбранном товаре в Intent
+                intent.putExtra("number", selectedItem.getNumber());
+                intent.putExtra("quantity", selectedItem.getQuantity());
+                intent.putExtra("price", selectedItem.getPrice());
+
+                // Запускаем активность ProductInfo с переданными данными
+                startActivity(intent);
             }
         });
     }

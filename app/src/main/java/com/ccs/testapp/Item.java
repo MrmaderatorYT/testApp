@@ -10,20 +10,19 @@ public class Item {
     private int quantity;
     private double price;
     private double cost;
-    private Bitmap image;
+    private String imageURL;
 
-    public Item(int id, int number, int quantity, double price, Bitmap image) {
+    public Item(int id, int number, int quantity, double price, String imageURL) {
         this.id = id;
         this.number = number;
         this.quantity = quantity;
         this.price = price;
-        this.image = image;
+        this.imageURL = imageURL;
         this.cost = quantity * price;
     }
     public Item() {
-        // Пустой конструктор без аргументов
+        // Пустой конструктор без аргументов, необходимый для Firebase
     }
-
     public int getId() {
         return id;
     }
@@ -44,8 +43,8 @@ public class Item {
         return cost;
     }
 
-    public Bitmap getImage() {
-        return image;
+    public String getImageURL() {
+        return imageURL;
     }
 
     public void setQuantity(int quantity) {
@@ -58,8 +57,8 @@ public class Item {
         this.cost = quantity * price;
     }
 
-    public void setImage(Bitmap image) {
-        this.image = image;
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 
     public String toJson() {

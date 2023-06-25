@@ -1,16 +1,33 @@
 package com.ccs.testapp;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.media.Image;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.UUID;
 
 public class ProductInfo extends AppCompatActivity {
     private EditText name, price, amount;
@@ -19,8 +36,15 @@ public class ProductInfo extends AppCompatActivity {
     private ImageView imageView;
     private ImageButton upload_btn;
     private int number;
+    private int id;
     private int quantity;
     private double priceInt;
+    private Uri selectedImageUri; // URI выбранного изображения
+
+    private DatabaseReference databaseRef;
+    private StorageReference storageRef;
+
+    private static final int PICK_IMAGE_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +63,9 @@ public class ProductInfo extends AppCompatActivity {
         amount.setVisibility(View.INVISIBLE);
         save.setVisibility(View.INVISIBLE);
         upload_btn.setVisibility(View.INVISIBLE);
+
+        databaseRef = FirebaseDatabase.getInstance("https://testapp-15f26-default-rtdb.europe-west1.firebasedatabase.app/").getReference("items");
+        storageRef = FirebaseStorage.getInstance("gs://testapp-15f26.appspot.com").getReference("images");
 
         Intent intent = getIntent();
         number = intent.getIntExtra("number", 0);
@@ -61,13 +88,108 @@ public class ProductInfo extends AppCompatActivity {
             }
         });
 
+        upload_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openGallery();
+            }
+        });
+
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(getIntent());
-                finish();
-                overridePendingTransition(0, 0);
+                saveItem();
             }
         });
     }
+
+
+    private void openGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Выберите изображение"), PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            selectedImageUri = data.getData();
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+                upload_btn.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void saveItem() {
+        String itemName = name.getText().toString();
+        double itemPrice = Double.parseDouble(price.getText().toString());
+        int itemQuantity = Integer.parseInt(amount.getText().toString());
+
+        // Генерируем уникальное имя для изображения
+        String imageFileName = UUID.randomUUID().toString();
+
+        // Сжимаем изображение и сохраняем в Firebase Storage
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+            byte[] imageData = baos.toByteArray();
+
+            StorageReference imageRef = storageRef.child(imageFileName);
+            UploadTask uploadTask = imageRef.putBytes(imageData);
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String imageURL = uri.toString();
+
+                            // Создаем экземпляр класса Item с передачей значения id и URL картинки
+                            Item item = new Item(id, number, itemQuantity, itemPrice, imageURL);
+
+                            // Сохраняем в базе данных
+                            databaseRef.child(String.valueOf(number)).setValue(item)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            // Успешно сохранено в базе данных
+                                            Toast.makeText(ProductInfo.this, "доне", Toast.LENGTH_SHORT).show();
+
+                                            // Обновляем соответствующий элемент списка с новой информацией о картинке
+                                            // ...
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            // Ошибка сохранения в базе данных
+                                            Toast.makeText(ProductInfo.this, "ерор", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            // Обработка ошибки получения URL изображения
+                        }
+                    });
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // Обработка ошибки загрузки изображения
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
