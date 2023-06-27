@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 
 public class ItemAdapter extends ArrayAdapter<Item> {
@@ -26,22 +28,35 @@ public class ItemAdapter extends ArrayAdapter<Item> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView;
-        if (view == null) {
-            view = LayoutInflater.from(mContext).inflate(R.layout.listview, parent, false);
+        if (convertView == null) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.listview, parent, false);
         }
 
-        Item item = mItems.get(position);
+        ImageView imageView = convertView.findViewById(R.id.image_view);
+        TextView nameTextView = convertView.findViewById(R.id.name_text_view);
+        TextView quantityTextView = convertView.findViewById(R.id.quantity_text_view);
+        TextView priceTextView = convertView.findViewById(R.id.price_text_view);
 
-        TextView nameTextView = view.findViewById(R.id.name_text_view);
-        nameTextView.setText(String.valueOf(item.getNumber()));
+        Item currentItem = getItem(position);
 
-        TextView quantityTextView = view.findViewById(R.id.quantity_text_view);
-        quantityTextView.setText(String.valueOf(item.getQuantity()));
+        // Загружаем и отображаем изображение с помощью Picasso
+        Picasso.get()
+                .load(currentItem.getImageURL())
+                .placeholder(R.drawable.box) // Плейсхолдер, если изображение не загружено
+                .error(R.drawable.box) // Изображение ошибки, если загрузка не удалась
+                .into(imageView);
 
-        TextView priceTextView = view.findViewById(R.id.price_text_view);
-        priceTextView.setText(String.valueOf(item.getPrice()));
+        nameTextView.setText(currentItem.getName());
+        quantityTextView.setText(String.valueOf(currentItem.getQuantity()));
+        priceTextView.setText(String.valueOf(currentItem.getPrice()));
 
-        return view;
+        return convertView;
+    }
+
+    public void updateItem(int position, Item newItem) {
+        if (position >= 0 && position < mItems.size()) {
+            mItems.set(position, newItem);
+            notifyDataSetChanged();
+        }
     }
 }

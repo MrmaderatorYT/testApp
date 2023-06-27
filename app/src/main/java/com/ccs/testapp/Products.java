@@ -1,7 +1,11 @@
 package com.ccs.testapp;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,9 +25,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-public class Products extends AppCompatActivity {
+public class Products extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     private ArrayList<Item> items;
+    String itemKey, em;
     private ListView listView;
     private ItemAdapter adapter;
     private DatabaseReference databaseRef;
@@ -33,14 +38,13 @@ public class Products extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_products);
-
+        em = SP.getEm(this);
         items = new ArrayList<>();
         adapter = new ItemAdapter(this, items);
         listView = findViewById(R.id.listView);
         listView.setAdapter(adapter);
-
         // Инициализируем Firebase Realtime Database
-        databaseRef = FirebaseDatabase.getInstance("https://testapp-15f26-default-rtdb.europe-west1.firebasedatabase.app/").getReference("items");
+        databaseRef = FirebaseDatabase.getInstance("https://testapp-15f26-default-rtdb.europe-west1.firebasedatabase.app/").getReference("items").getRef().child(em);
 
         // Подтягиваем данные из Firebase Realtime Database
         fetchData();
@@ -52,13 +56,9 @@ public class Products extends AppCompatActivity {
                 switch (view.getId()) {
                     case R.id.add_prod_btn:
                         // Создаем новый товар
-                        Item newItem = new Item(0, items.size() + 1, 0, 0, null);
-                        // Добавляем его в список
-                        items.add(newItem);
-                        // Обновляем список
-                        adapter.notifyDataSetChanged();
-                        // Получаем уникальный ключ для нового товара в базе данных
-                        String itemKey = databaseRef.push().getKey();
+                        Item newItem = new Item(0, "Товар №" + items.size(), items.size() + 1, 0, 0, null);
+                        itemKey = databaseRef.push().getKey(); // Генерируем уникальный ключ для нового товара
+
                         // Добавляем данные в Firebase Realtime Database
                         databaseRef.child(itemKey).setValue(newItem)
                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -67,8 +67,11 @@ public class Products extends AppCompatActivity {
                                         if (task.isSuccessful()) {
                                             // Данные успешно отправлены в базу данных
                                             Log.d("Products", "Data sent to Firebase Realtime Database");
+
+                                            // Обновляем список только после успешной отправки данных
+                                            // Данные будут автоматически получены из базы данных в колбэке onDataChange
                                         } else {
-                                            // Произошла ошибка при отправке данных 
+                                            // Произошла ошибка при отправке данных
                                             Log.e("Products", "Failed to send data to Firebase Realtime Database: " + task.getException());
                                         }
                                     }
@@ -77,6 +80,7 @@ public class Products extends AppCompatActivity {
                 }
             }
         });
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -91,6 +95,8 @@ public class Products extends AppCompatActivity {
                 intent.putExtra("number", selectedItem.getNumber());
                 intent.putExtra("quantity", selectedItem.getQuantity());
                 intent.putExtra("price", selectedItem.getPrice());
+                intent.putExtra("id", selectedItem.getId());
+                intent.putExtra("itemKey", selectedItem.getItemKey());
 
                 // Запускаем активность ProductInfo с переданными данными
                 startActivity(intent);
@@ -98,56 +104,6 @@ public class Products extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            if (requestCode == 1) { // Добавление нового товара
-                String itemJson = data.getStringExtra("item");
-                Item item = Item.fromJson(itemJson);
-                items.add(item);
-                adapter.notifyDataSetChanged();
-                // Получаем уникальный ключ для нового товара в базе данных
-                String itemKey = databaseRef.push().getKey();
-                // Добавляем данные в Firebase Realtime Database
-                databaseRef.child(itemKey).setValue(item)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    // Данные успешно отправлены в базу данных
-                                    Log.d("Products", "Data sent to Firebase Realtime Database");
-                                } else {
-                                    // Произошла ошибка при отправке данных
-                                    Log.e("Products", "Failed to send data to Firebase Realtime Database: " + task.getException());
-                                }
-                            }
-                        });
-            } else if (requestCode == 2) { // Редактирование существующего товара
-                int position = data.getIntExtra("position", -1);
-                String itemJson = data.getStringExtra("item");
-                Item item = Item.fromJson(itemJson);
-                if (position != -1) {
-                    items.set(position, item);
-                    adapter.notifyDataSetChanged();
-                    // Обновляем данные в Firebase Realtime Database
-                    databaseRef.child(String.valueOf(item.getId())).setValue(item)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        // Данные успешно обновлены в базе данных
-                                        Log.d("Products", "Data updated in Firebase Realtime Database");
-                                    } else {
-                                        // Произошла ошибка при обновлении данных
-                                        Log.e("Products", "Failed to update data in Firebase Realtime Database: " + task.getException());
-                                    }
-                                }
-                            });
-                }
-            }
-        }
-    }
 
     private void fetchData() {
         databaseRef.addValueEventListener(new ValueEventListener() {
@@ -157,6 +113,9 @@ public class Products extends AppCompatActivity {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Item item = snapshot.getValue(Item.class);
                     if (item != null) {
+                        item.setImageURL(snapshot.child("imageURL").getValue(String.class));
+                        item.setItemKey(snapshot.getKey());
+
                         items.add(item);
                     }
                 }
@@ -170,5 +129,10 @@ public class Products extends AppCompatActivity {
                 Log.e("Products", "Failed to fetch data from Firebase Realtime Database: " + databaseError.getMessage());
             }
         });
+
+    }
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        em = SP.getEm(this);
     }
 }

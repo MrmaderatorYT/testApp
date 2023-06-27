@@ -23,10 +23,11 @@ import com.google.firebase.auth.FirebaseUser;
 import org.jetbrains.annotations.NotNull;
 
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
 private Button login, recovery, register;
 private EditText email, password;
 private FirebaseAuth auth;
+private String em;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +41,7 @@ private FirebaseAuth auth;
         login = findViewById(R.id.login_btn);
         email = findViewById(R.id.edit_em);
         password = findViewById(R.id.edit_pass);
-        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        em = SP.getEm(this);
 
 
         //подчёркивание текста
@@ -70,8 +70,9 @@ private FirebaseAuth auth;
                             FirebaseUser user = auth.getCurrentUser();
                             assert user != null;
                             if (user.isEmailVerified()) {
-                                editor.putString("my_edit_key", result);
-                                editor.apply();
+                                String a = result.replace(".", "");
+                                String b = a.replace("@", "");
+                                SP.em(getApplicationContext(), b);
                                 MainActivity.this.startActivity(new Intent(MainActivity.this, Products.class));
                                 overridePendingTransition(0, 0);
                             }
@@ -112,5 +113,8 @@ private FirebaseAuth auth;
     }
 
 
-
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        em = SP.getEm(this);
+    }
 }

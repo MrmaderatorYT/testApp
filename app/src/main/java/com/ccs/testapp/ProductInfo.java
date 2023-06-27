@@ -5,10 +5,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,31 +21,36 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
-public class ProductInfo extends AppCompatActivity {
+public class ProductInfo extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
     private EditText name, price, amount;
     private TextView textInfo;
     private Button save, edit;
     private ImageView imageView;
     private ImageButton upload_btn;
     private int number;
-    private int id;
+    int id;
     private int quantity;
     private double priceInt;
     private Uri selectedImageUri; // URI выбранного изображения
 
     private DatabaseReference databaseRef;
     private StorageReference storageRef;
-
+    private ItemAdapter itemAdapter;
+    String itemKey, em;
     private static final int PICK_IMAGE_REQUEST = 1;
 
     @Override
@@ -63,16 +70,37 @@ public class ProductInfo extends AppCompatActivity {
         amount.setVisibility(View.INVISIBLE);
         save.setVisibility(View.INVISIBLE);
         upload_btn.setVisibility(View.INVISIBLE);
-
-        databaseRef = FirebaseDatabase.getInstance("https://testapp-15f26-default-rtdb.europe-west1.firebasedatabase.app/").getReference("items");
+        em = SP.getEm(this);
+        databaseRef = FirebaseDatabase.getInstance("https://testapp-15f26-default-rtdb.europe-west1.firebasedatabase.app/").getReference("items").child(em);
         storageRef = FirebaseStorage.getInstance("gs://testapp-15f26.appspot.com").getReference("images");
-
         Intent intent = getIntent();
         number = intent.getIntExtra("number", 0);
         quantity = intent.getIntExtra("quantity", 0);
         priceInt = intent.getDoubleExtra("price", 0.0);
+        itemKey = getIntent().getStringExtra("itemKey");
+
+        // Устанавливаем значения в соответствующие поля
+        name.setText(intent.getStringExtra("name"));
+        price.setText(String.valueOf(priceInt));
+        amount.setText(String.valueOf(quantity));
 
         textInfo.setText("Номер товара: " + number + "\n" + "Количество: " + quantity + "\n" + "Цена: " + priceInt + " грн");
+        databaseRef.child(itemKey).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String imageURL = dataSnapshot.child("imageURL").getValue(String.class);
+                Picasso.get()
+                        .load(imageURL)
+                        .into(imageView);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Произошла ошибка при чтении данных
+                Log.e("ProductInfo", "Failed to fetch image URL from Firebase Realtime Database: " + databaseError.getMessage());
+            }
+        });
 
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,6 +162,7 @@ public class ProductInfo extends AppCompatActivity {
         // Генерируем уникальное имя для изображения
         String imageFileName = UUID.randomUUID().toString();
 
+
         // Сжимаем изображение и сохраняем в Firebase Storage
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
@@ -144,52 +173,62 @@ public class ProductInfo extends AppCompatActivity {
             StorageReference imageRef = storageRef.child(imageFileName);
             UploadTask uploadTask = imageRef.putBytes(imageData);
             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
-                        public void onSuccess(Uri uri) {
-                            String imageURL = uri.toString();
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            imageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String imageURL = uri.toString();
 
-                            // Создаем экземпляр класса Item с передачей значения id и URL картинки
-                            Item item = new Item(id, number, itemQuantity, itemPrice, imageURL);
+                                    // Создаем экземпляр класса Item с передачей значения id и URL картинки
+                                    Item item = new Item(id, itemName, number, itemQuantity, itemPrice, imageURL);
+                                    if (itemKey != null) {
+                                        // Сохраняем в базе данных
+                                        databaseRef.child(itemKey).setValue(item)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        // Успешно сохранено в базе данных
+                                                        Toast.makeText(ProductInfo.this, "доне", Toast.LENGTH_SHORT).show();
 
-                            // Сохраняем в базе данных
-                            databaseRef.child(String.valueOf(number)).setValue(item)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            // Успешно сохранено в базе данных
-                                            Toast.makeText(ProductInfo.this, "доне", Toast.LENGTH_SHORT).show();
-
-                                            // Обновляем соответствующий элемент списка с новой информацией о картинке
-                                            // ...
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            // Ошибка сохранения в базе данных
-                                            Toast.makeText(ProductInfo.this, "ерор", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                                        // Обновляем соответствующий элемент списка с новой информацией о картинке
+                                                        if (itemAdapter != null) {
+                                                            Item updatedItem = new Item(id, itemName, number, itemQuantity, itemPrice, imageURL);
+                                                            itemAdapter.updateItem(id, updatedItem);
+                                                        }
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        // Ошибка при сохранении в базе данных
+                                                        Toast.makeText(ProductInfo.this, "не доне", Toast.LENGTH_SHORT).show();
+                                                        Log.e("ProductInfo", "Failed to save item to Firebase Realtime Database: " + e.getMessage());
+                                                    }
+                                                });
+                                    }
+                                    else{
+                                        Log.e("ProductInfo", "itemKey is null");
+                                    }
+                                }
+                            });
                         }
-                    }).addOnFailureListener(new OnFailureListener() {
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            // Обработка ошибки получения URL изображения
+                            // Ошибка при загрузке изображения в Firebase Storage
+                            Toast.makeText(ProductInfo.this, "не доне", Toast.LENGTH_SHORT).show();
+                            Log.e("ProductInfo", "Failed to upload image to Firebase Storage: " + e.getMessage());
                         }
                     });
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    // Обработка ошибки загрузки изображения
-                }
-            });
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        em = SP.getEm(this);
     }
 
 }
